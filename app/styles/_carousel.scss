@@ -1,0 +1,643 @@
+$baseThumbHeight: 60px;
+$baseThumbWidth: 120px;
+
+$baseNavSize: 12px;
+$baseNavMargin: 4px;
+
+$baseArrowsSize: 50px;
+
+$lightColor: #ffffff;
+$mediumColor: #777777;
+$darkColor: #000000;
+
+/* ARROWS FONT ICONS */
+$iconArrow1Left: "\e606";
+$iconArrow1Right: "\e607";
+$iconArrow2Left: "\e608";
+$iconArrow2Right: "\e609";
+$iconArrow3Left: "\e60a";
+$iconArrow3Right: "\e60b";
+$iconArrow4Left: "\e60c";
+$iconArrow4Right: "\e60d";
+$iconArrow5Left: "\e60e";
+$iconArrow5Right: "\e60f";
+$iconArrow6Left: "\e610";
+$iconArrow6Right: "\e611";
+$iconArrow7Left: "\e612";
+$iconArrow7Right: "\e613";
+
+$iconArrowMetro1Left: "\e601";
+$iconArrowMetro1Right: "\e600";
+$iconArrowMetro2Left: "\e603";
+$iconArrowMetro2Right: "\e602";
+$iconArrowMetro3Left: "\e605";
+$iconArrowMetro3Right: "\e604";
+$iconArrowMetro4Left: "\e61b";
+$iconArrowMetro4Right: "\e61a";
+
+/* BULLETS FONT ICONS */
+$iconBulletMetrostationOn: "\e614";
+$iconBulletMetrostationOff: "\e615";
+$iconBulletDonut: "\e616";
+$iconBulletCircledStar: "\e617";
+$iconBullet2On: "\e618";
+$iconBullet2Off: "\e619";
+$iconBulletMetrostationVOn: "\e61c";
+$iconBulletMetrostationVOff: "\e61d";
+
+@font-face {
+    font-family: 'carousel-icons';
+    src:url('fonts/carousel-icons.eot');
+    src:url('fonts/carousel-icons.eot?#iefix') format('embedded-opentype'),
+        url('fonts/carousel-icons.ttf') format('truetype'),
+        url('fonts/carousel-icons.woff') format('woff'),
+        url('fonts/carousel-icons.svg#carousel-icons') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@mixin icons{
+    font-family: 'carousel-icons';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+@mixin arrow($leftArrow, $rightArrow){
+    .transitions-prev:before {
+        @include icons;
+        content: $leftArrow;
+    }
+    .transitions-next:before {
+        @include icons;
+        content: $rightArrow;
+    }
+}
+
+@mixin bullet($bulletOff, $bulletOn: false) {
+    &:before {
+        @include icons;
+        content: $bulletOff;
+    }
+    @if $bulletOn {
+        &.active:before {
+            content: $bulletOn;
+        }
+    }
+}
+
+@mixin icon($icon) {
+    @include icons;
+    &:before {
+        content: $icon;
+    }
+}
+
+/*[class*="icon-"]{
+    @include icons;
+}*/
+
+.icon-arrow1-left {
+    @include icon($iconArrow1Left);
+}
+.icon-arrow1-right {
+    @include icon($iconArrow1Right);
+}
+.icon-arrow2-left {
+    @include icon($iconArrow2Left);
+}
+.icon-arrow2-right {
+    @include icon($iconArrow2Right);
+}
+.icon-arrow3-left {
+    @include icon($iconArrow3Left);
+}
+.icon-arrow3-right {
+    @include icon($iconArrow3Right);
+}
+.icon-arrow4-left {
+    @include icon($iconArrow4Left);
+}
+.icon-arrow4-right {
+    @include icon($iconArrow4Right);
+}
+.icon-arrow5-left {
+    @include icon($iconArrow5Left);
+}
+.icon-arrow5-right {
+    @include icon($iconArrow5Right);
+}
+.icon-arrow6-left {
+    @include icon($iconArrow6Left);
+}
+.icon-arrow6-right {
+    @include icon($iconArrow6Right);
+}
+.icon-arrow7-left {
+    @include icon($iconArrow7Left);
+}
+.icon-arrow7-right {
+    @include icon($iconArrow7Right);
+}
+.icon-arrow-metro1-right {
+    @include icon($iconArrowMetro1Right);
+}
+.icon-arrow-metro1-left {
+    @include icon($iconArrowMetro1Left);
+}
+.icon-arrow-metro2-right {
+    @include icon($iconArrowMetro2Right);
+}
+.icon-arrow-metro2-left {
+    @include icon($iconArrowMetro2Left);
+}
+.icon-arrow-metro3-right {
+    @include icon($iconArrowMetro3Right);
+}
+.icon-arrow-metro3-left {
+    @include icon($iconArrowMetro3Left);
+}
+.icon-arrow-metro4-right {
+    @include icon($iconArrowMetro4Right);
+}
+.icon-arrow-metro4-left {
+    @include icon($iconArrowMetro4Left);
+}
+
+.icon-bullet-metrostation-on {
+    @include icon($iconBulletMetrostationOn);
+}
+.icon-bullet-metrostation-off {
+    @include icon($iconBulletMetrostationOff);
+}
+.icon-bullet-donut {
+    @include icon($iconBulletDonut);
+}
+.icon-bullet-circled-star {
+    @include icon($iconBulletCircledStar);
+}
+.icon-bullet2-on {
+    @include icon($iconBullet2On);
+}
+.icon-bullet2-off {
+    @include icon($iconBullet2Off);
+}
+.icon-bullet-metrostation-v-on {
+    @include icon($iconBulletMetrostationVOn);
+}
+.icon-bullet-metrostation-v-off {
+    @include icon($iconBulletMetrostationVOff);
+}
+.icon-none {
+    @include icon('\e000');
+}
+// Carousel wrapper
+.transitions-slider-wrapper {
+    position: relative;
+}
+
+// Slides container
+.transitions-slider {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    .transitions-link {
+        position: absolute;
+        z-index: 101;
+    }
+}
+
+.carousel-wrapper {
+    overflow: hidden;
+    position: relative;
+    color: $darkColor;
+    width: 100%;
+    height: 100%;
+
+    // Main navigation container
+    .transitions-nav-wrapper {
+        position: absolute;
+        z-index: 102;
+
+        .transitions-nav-container {
+            margin: auto;
+            white-space: nowrap;
+            .transitions-nav-control {
+                -webkit-touch-callout: none;
+                @include user-select(none);
+                cursor: pointer;
+                display: inline-block;
+                outline: none;
+            }
+        }
+        .transitions-thumbnail-preview {
+            display: none;
+        }
+    }
+    &.navigation-none {
+        .transitions-nav-wrapper {
+            display: none;
+        }
+    }
+    &.navigation-bottom {
+        .transitions-nav-wrapper {
+            bottom: 0;
+        }
+    }
+    &.navigation-top {
+        .transitions-nav-wrapper {
+            top: 0;
+        }
+    }
+    &.navigation-center {
+        .transitions-nav-wrapper {
+            text-align: center;
+            margin: auto;
+        }
+    }
+    &.navigation-left {
+        .transitions-nav-wrapper {
+            text-align: left;
+        }
+    }
+    &.navigation-right {
+        .transitions-nav-wrapper {
+            text-align: right;
+            right: 0;
+        }
+    }
+    &.navigation-horizontal {
+        .transitions-nav-wrapper {
+            left: 0;
+            right: 0;
+        }
+    }
+    &.navigation-vertical {
+        &.navigation-left {
+            .transitions-nav-wrapper {
+                left: 0;
+            }
+        }
+        &.navigation-right {
+            .transitions-nav-wrapper {
+                right: 0;
+            }
+        }
+        .transitions-nav-container {
+            .transitions-nav-control {
+                display: block;
+                float: right;
+                clear: both;
+            }
+        }
+    }
+    &:not([class*=navAlwaysVisible]) {
+        // Hide navigation if not always visible
+        .transitions-nav-wrapper {
+            display: block;
+            opacity: 0.0;
+        }
+        &:hover {
+            // Show navigation on hover
+            .transitions-nav-wrapper {
+                opacity: 1.0;
+            }
+        }
+    }
+
+    &.navigation-thumbnails {
+        margin: 0;
+        .transitions-nav-control {
+            .transitions-thumbnail-preview {
+                margin: 0;
+                display: block;
+            }
+            .transitions-index {
+                display: none;
+            }
+            &.active {
+                .transitions-thumbnail-preview{
+                    box-sizing: border-box;
+                    border: solid 2px $lightColor;
+                }
+            }
+        }
+        &.navigation-vertical {
+            .transitions-nav-control {
+                margin-bottom: 4px;
+            }
+        }
+        &.navigation-horizontal {
+            .transitions-nav-control {
+                margin-right: 4px;
+            }
+        }
+        &.thumbnails-small {
+            .transitions-nav-control {
+                .transitions-thumbnail-preview {
+                    width: $baseThumbWidth;
+                    height: $baseThumbHeight;
+                }
+            }
+            &.navigation-vertical {
+                &.navigation-right {
+                    .transitions-nav {
+                        margin-right: $baseThumbWidth + $baseNavMargin;
+                    }
+                }
+                &.navigation-left, &.navigation-center {
+                    .transitions-nav {
+                        margin-left: $baseThumbWidth + $baseNavMargin;
+                    }
+                }
+            }
+        }
+        &.thumbnails-medium {
+            .transitions-nav-control {
+                .transitions-thumbnail-preview {
+                    width: $baseThumbWidth * 1.5;
+                    height: $baseThumbHeight * 1.5;
+                }
+            }
+            &.navigation-vertical {
+                &.navigation-right {
+                    .transitions-nav {
+                        margin-right: $baseThumbWidth * 1.5 + $baseNavMargin;
+                    }
+                }
+                &.navigation-left, &.navigation-center {
+                    .transitions-nav {
+                        margin-left: $baseThumbWidth * 1.5 + $baseNavMargin;
+                    }
+                }
+            }
+        }
+        &.thumbnails-big {
+            .transitions-nav-control {
+                .transitions-thumbnail-preview {
+                    width: $baseThumbWidth * 2;
+                    height: $baseThumbHeight * 2;
+                }
+            }
+            &.navigation-vertical {
+                &.navigation-right {
+                    .transitions-nav {
+                        margin-right: $baseThumbWidth * 2 + $baseNavMargin;
+                    }
+                }
+                &.navigation-left, &.navigation-center {
+                    .transitions-nav {
+                        margin-left: $baseThumbWidth * 2 + $baseNavMargin;
+                    }
+                }
+            }
+        }
+    }
+
+    &.navigation-bullets, &.navigation-numbers {
+        .transitions-nav-wrapper {
+            margin: $baseNavMargin;
+            .transitions-nav-control {
+                display: inline-block;
+                font-size: $baseNavSize;
+                &.active {
+                    color: $lightColor;
+                }
+            }
+        }
+        &.navigation-vertical {
+            &.navigation-right {
+                .transitions-nav {
+                    margin-right: $baseNavSize + ($baseNavMargin * 2);
+                }
+            }
+            &.navigation-left {
+                .transitions-nav {
+                    margin-left: $baseNavSize + ($baseNavMargin * 2);
+                }
+            }
+        }
+    }
+    &.navigation-numbers {
+        .transitions-nav-control {
+            padding: 3px;
+            margin: $baseNavMargin;
+            color: $lightColor;
+            background: none $mediumColor;
+            &.active {
+                color: $lightColor;
+                background-color: $darkColor;
+            }
+        }
+    }
+    &.navigation-bullets {
+        .transitions-nav-control {
+            padding: 2px;
+            .transitions-index {
+                display: none;
+            }
+        }
+        &.bullet1{
+            .transitions-nav-control {
+                @include bullet($iconBulletDonut);
+            }
+        }
+        &.bullet2{
+            .transitions-nav-control {
+                @include bullet($iconBullet2Off, $iconBullet2On);
+                &.active {
+                    color: inherit !important;
+                }
+            }
+        }
+        &.bullet-circledstar{
+            .transitions-nav-control {
+                @include bullet($iconBulletCircledStar);
+            }
+        }
+        &.bullet-metrostation{
+            .transitions-nav-control {
+                @include bullet($iconBulletMetrostationOff, $iconBulletMetrostationOn);
+                margin: 0;
+                padding: 0;
+                &.active {
+                    color: inherit !important;
+                }
+            }
+            &.navigation-vertical {
+                .transitions-nav-control {
+                    @include bullet($iconBulletMetrostationVOff, $iconBulletMetrostationVOn);
+                }
+            }
+        }
+        &.bullets-medium {
+            .transitions-nav-control {
+                font-size: $baseNavSize * 1.5;
+            }
+            &.navigation-vertical {
+                &.navigation-right {
+                    .transitions-nav {
+                        margin-right: ($baseNavSize * 1.5)  + ($baseNavMargin * 2);
+                    }
+                }
+                &.navigation-left {
+                    .transitions-nav {
+                        margin-left: ($baseNavSize * 1.5) + ($baseNavMargin * 2);
+                    }
+                }
+            }
+        }
+        &.bullets-big {
+            .transitions-nav-control {
+                font-size: $baseNavSize * 2;
+            }
+            &.navigation-vertical {
+                &.navigation-right {
+                    .transitions-nav {
+                        margin-right: ($baseNavSize * 2) + ($baseNavMargin * 2);
+                    }
+                }
+                &.navigation-left {
+                    .transitions-nav {
+                        margin-left: ($baseNavSize * 2) + ($baseNavMargin * 2);
+                    }
+                }
+            }
+        }
+    }
+    &.hasNextPrev {
+
+        // Next/previous arrows
+        &:not([class*=navAlwaysVisible]) {
+            // Hide navigation if not always visible
+            .transitions-nav {
+                display: block;
+                opacity: 0.0;
+            }
+            &:hover {
+                // Show navigation on hover
+                .transitions-nav {
+                    opacity: 0.7;
+                    &:hover {
+                        opacity: 1;
+                        background: none rgba(255, 255, 255, 0.5);
+                    }
+                }
+            }
+        }
+        .transitions-nav {
+            @include icons;
+            @include user-select(none);
+            z-index: 10000;
+            position: absolute;
+            top: 50%;
+            display: inline-block;
+            vertical-align: middle;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            opacity: 0.7;
+            &:hover {
+                opacity: 1;
+                background: none rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        .transitions-next {
+            right: 0;
+        }
+
+        .transitions-prev{
+            left: 0;
+        }
+
+        &.arrows-big {
+            .transitions-nav{
+                font-size: $baseArrowsSize * 3;
+                margin-top: -($baseArrowsSize * 3) / 2;
+            }
+        }
+        &.arrows-medium {
+            .transitions-nav{
+                font-size: $baseArrowsSize * 2;
+                margin-top: -$baseArrowsSize;
+            }
+        }
+        &.arrows-small {
+            .transitions-nav{
+                font-size: $baseArrowsSize;
+                margin-top: -$baseArrowsSize / 2;
+            }
+        }
+        &.arrow1 {
+            @include arrow($iconArrow1Left, $iconArrow1Right);
+        }
+        &.arrow2 {
+            @include arrow($iconArrow2Left, $iconArrow2Right);
+        }
+        &.arrow3 {
+            @include arrow($iconArrow3Left, $iconArrow3Right);
+        }
+        &.arrow4 {
+            @include arrow($iconArrow4Left, $iconArrow4Right);
+        }
+        &.arrow5 {
+            @include arrow($iconArrow5Left, $iconArrow5Right);
+        }
+        &.arrow6 {
+            @include arrow($iconArrow6Left, $iconArrow6Right);
+        }
+        &.arrow7 {
+            @include arrow($iconArrow7Left, $iconArrow7Right);
+        }
+        &.arrow-metro1 {
+            @include arrow($iconArrowMetro1Left, $iconArrowMetro1Right);
+        }
+        &.arrow-metro2 {
+            @include arrow($iconArrowMetro2Left, $iconArrowMetro2Right);
+        }
+        &.arrow-metro3 {
+            @include arrow($iconArrowMetro3Left, $iconArrowMetro3Right);
+        }
+        &.arrow-metro4 {
+            @include arrow($iconArrowMetro4Left, $iconArrowMetro4Right);
+        }
+    }
+
+    &.colors-light {
+        color: $lightColor;
+        &.navigation-bullets {
+            .transitions-nav-control {
+                color: $lightColor;
+                &.active {
+                    color: $darkColor;
+                }
+            }
+        }
+        &.navigation-numbers {
+            .transitions-nav-control {
+                color: $darkColor;
+                background: none $lightColor;
+                &.active {
+                    color: $lightColor;
+                    background-color: $mediumColor;
+                }
+            }
+        }
+        &.hasNextPrev {
+            // Next/previous arrows
+            .transitions-nav {
+                &:hover {
+                    background: none rgba(0, 0, 0, 0.5);
+                }
+            }
+        }
+    }
+}

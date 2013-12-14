@@ -1,0 +1,11 @@
+<div class="clearfix">
+    {{view App.TransitionsComponentView params=params images=images}}
+    <div class="pull-left">
+        <button class="btn btn-default" {{action 'previous'}}>Previous</button>
+        <button class="btn btn-default" {{action 'next'}}>Next</button>
+    </div>
+    <div class="pull-right">
+        <button class="btn btn-default" {{action 'pause'}}>Pause</button>
+        <button class="btn btn-default" {{action 'resume'}}>Resume</button>
+    </div>
+</div>
