@@ -170,7 +170,7 @@
                             .eq(settings.currentImageIndex)
                             .addClass('active'),
                             offsetParent = activeNav.offsetParent();
-                    debugger;
+                    
                     if (settings.navType === 'navigation-thumbnails') {
                         if (settings.navOrientation === 'navigation-vertical') {
                             // Vertical navigation

@@ -1,5 +1,4 @@
 (function($) {
-
     // Petit hack pour contourner l'implementation de reverse par prototype.js
     var reverseArray = (typeof []._reverse === 'undefined') ? [].reverse : []._reverse;
 
@@ -47,8 +46,9 @@
     }
 
     function hideIt($element, options, i) {
-        var index = options.circles - i;
-        var op = 1 - (index + 1) / 10;
+        var index = options.circles - i,
+            op = 1 - (index + 1) / 10;
+
         $('.transitions-el:eq(' + index + ')', $element).animate({opacity: op}, options.timeFactor, function() {
             if (i < $('.transitions-el', $element).length - 1) {
                 i++;
@@ -103,15 +103,12 @@
 
         return _spiralify(matrix);
     }
-    function swapDirection(index, options) {
-        if (index % options.cols === 0) {
-            options.currentRow++;
-            if (options.direction === 'forward')
-                options.direction = 'backward';
-            else
-                options.direction = 'forward';
-        }
-    }
+//    function swapDirection(index, options) {
+//        if (index % options.cols === 0) {
+//            options.currentRow++;
+//            options.direction = !options.direction;
+//        }
+//    }
     function createBoxes($element, src, options, css) {
         var w = options.width / options.cols,
                 h = options.height / options.rows;
@@ -209,13 +206,15 @@
 
     var transitions = {};
 
-    transitions.randomFade = function($element, options) {
-        return transitions.boxes($element, options, true, false, true);
-    };
-    transitions.randomDimensions = function($element, options) {
-        return transitions.boxes($element, options, true, true);
-    };
-    transitions.boxes = function($element, options, random, dimensions, fade, reverse, matrix) {
+    /**
+     * params: random, dimensions, fade, reverse, easing
+     *
+     * @param {type} $element
+     * @param {type} options
+     * @param {type} params
+     * @returns {undefined}
+     */
+    function boxes ($element, options, params) {
         var w = options.width / options.cols,
                 h = options.height / options.rows,
                 noOfBoxes = options.rows * options.cols,
@@ -224,24 +223,24 @@
                 cssFrom = {opacity: 1},
                 cssTo = {opacity: 1};
 
-        if (random) {
+        if (params.random) {
             $elements.sort(function(a, b) {
                 return Math.random() - 0.5;
             });
-        } else if (reverse) {
+        } else if (params.reverse) {
             $elements = reverseArray.call($elements);
         }
 
-        if (dimensions) {
+        if (params.dimensions) {
             cssFrom.width = 0;
             cssFrom.height = 0;
             cssTo.width = Math.ceil(w);
             cssTo.height = Math.ceil(h);
         } else {
-            fade = true;
+            params.fade = true;
         }
 
-        if (fade) {
+        if (params.fade) {
             cssFrom.opacity = 0;
         }
 
@@ -250,6 +249,7 @@
             setTimeout(function() {
                 $(element).animate(cssTo,
                         options.animationSpeed,
+                        options.easing,
                         function() {
                             if (index === noOfBoxes - 1) {
                                 animationComplete($element, options);
@@ -260,50 +260,83 @@
             factor += options.timeFactor;
         });
     };
-    transitions.linearPealDimensions = function($element, options, fade, reverse) {
-        return transitions.boxes($element, options, false, true, fade, reverse);
+    transitions.boxFade = function($element, options, reverse, easing) {
+        return boxes($element, options, {
+            fade: true
+        });
     };
-    transitions.linearPealReverseDimensions = function($element, options, fade) {
-        return transitions.linearPealDimensions($element, options, fade, true);
+    transitions.boxFadeRandom = function($element, options, easing) {
+        return boxes($element, options, {
+            random: true,
+            fade: true,
+            easing: easing
+        });
     };
-    transitions.linearPeal = function($element, options, reverse) {
-        return transitions.boxes($element, options, false, false, true, reverse);
+    transitions.boxFadeReverse = function($element, options, easing) {
+        return boxes($element, options, {
+            fade: true,
+            reverse: true
+        });
     };
-    transitions.linearPealReverse = function($element, options) {
-        return transitions.linearPeal($element, options, true);
+    transitions.boxDimensions = function($element, options, easing) {
+        return boxes($element, options, {
+            dimensions: true,
+            easing: easing
+        });
+    };
+    transitions.boxDimensionsRandom = function($element, options, easing) {
+        return boxes($element, options, {
+            random: true,
+            dimensions: true,
+            easing: easing
+        });
+    };
+    transitions.boxDimensionsReverse = function($element, options, easing) {
+        return boxes($element, options, {
+            dimensions: true,
+            reverse: true,
+            easing: easing
+        });
     };
 
-    transitions.spiral = function($element, options, dimensions, fade, reverse) {
+    /**
+     * params: dimensions, fade, reverse, easing
+     *
+     * @param {type} $element
+     * @param {type} options
+     * @param {type} params
+     * @returns {undefined}
+     */
+    function spiral ($element, options, params) {
         var w = options.width / options.cols,
                 h = options.height / options.rows,
-                noOfBoxes = options.rows * options.cols,
                 $elements = createBoxes($element, options.src, options),
                 factor = 0,
                 cssFrom = {opacity: 1},
         cssTo = {opacity: 1},
         indeces;
 
-        if (reverse) {
+        if (params.reverse) {
             $elements = reverseArray.call($elements);
         }
 
-        if (dimensions) {
+        if (params.dimensions) {
             cssFrom.width = 0;
             cssFrom.height = 0;
             cssTo.width = Math.ceil(w);
             cssTo.height = Math.ceil(h);
         } else {
-            fade = true;
+            params.fade = true;
         }
 
-        if (fade) {
+        if (params.fade) {
             cssFrom.opacity = 0;
         }
 
         $elements.css(cssFrom);
 
         indeces = spiralify(options.cols, options.rows);
-        if (reverse)
+        if (params.reverse)
             indeces = reverseArray.call(indeces);
 
         for (var i = 0; i < indeces.length; i++) {
@@ -311,6 +344,7 @@
                 setTimeout(function() {
                     $elements.eq(indeces[index]).animate(cssTo,
                             options.animationSpeed / 2,
+                            options.easing,
                             function() {
                                 if (index === indeces.length - 1) {
                                     animationComplete($element, options);
@@ -321,25 +355,51 @@
             })(i);
         }
     };
-    transitions.spiralReverse = function($element, options) {
-        return transitions.spiral($element, options, false, true);
+    transitions.spiralFade = function($element, options, easing) {
+        return spiral($element, options, {
+            fade: true,
+            easing: easing
+        });
     };
-    transitions.spiralDimension = function($element, options) {
-        return transitions.spiral($element, options, true, false);
+    transitions.spiralFadeReverse = function($element, options, easing) {
+        return spiral($element, options, {
+            fade: true,
+            reverse: true,
+            easing: easing
+        });
     };
-    transitions.spiralReverseDimension = function($element, options) {
-        return transitions.spiral($element, options, true, false, true);
+    transitions.spiralDimensions = function($element, options, easing) {
+        return spiral($element, options, {
+            dimensions: true,
+            easing: easing
+        });
     };
-    transitions.boxFade = function($element, options, out, rotate, toggle, swirl) {
-        var $elements = createCircles($element, out ? options.previousImage : options.src, options, {
-            opacity: out ? 1 : 0
+    transitions.spiralDimensionsReverse = function($element, options, easing) {
+        return spiral($element, options, {
+            dimensions: true,
+            reverse: true,
+            easing: easing
+        });
+    };
+
+    /**
+     * params: out, rotate, toggle, swirl, easing
+     *
+     * @param {type} $element
+     * @param {type} options
+     * @param {type} params
+     * @returns {undefined}
+     */
+    function radial ($element, options, params) {
+        var $elements = createCircles($element, params.out ? options.previousImage : options.src, options, {
+            opacity: params.out ? 1 : 0
         });
 
-        if (!swirl) {
+        if (!params.swirl) {
             $elements.css({borderRadius: 0});
         }
 
-        if (out) {
+        if (params.out) {
             $elements = reverseArray.call($elements);
             fi(options.src).prependTo($element);
         }
@@ -349,17 +409,18 @@
             degree += 5;
 
             var cssTo = {
-                opacity: out ? 0 : 1,
-                rotation: rotate ? 360 : 0
+                opacity: params.out ? 0 : 1,
+                rotation: params.rotate ? 360 : 0
             };
 
-            if (rotate && toggle && index % 2) {
+            if (params.rotate && params.toggle && index % 2) {
                 cssTo.rotation = -cssTo.rotation;
             }
 
             setTimeout(function() {
                 $(element).animate(cssTo, {
                     duration: options.animationSpeed,
+                    easing: options.easing,
                     step: function(now, fx) {
                         if (fx.prop === 'rotation') {
                             $(this).css({'transform': 'rotate(' + now + 'deg)'});
@@ -373,53 +434,100 @@
             }, 100 * index);
         });
     };
-    transitions.boxFadeOut = function($element, options, rotate, toggle) {
-        return transitions.boxFade($element, options, true, rotate, toggle);
+    transitions.squareFadeOut = function($element, options, rotate, toggle, easing) {
+        return radial($element, options, {
+            out: true,
+            easing: easing
+        });
     };
-    transitions.boxFadeOutRotate = function($element, options, toggle) {
-        return transitions.boxFadeOut($element, options, true, toggle);
+    transitions.squareFadeOutRotate = function($element, options, toggle, easing) {
+        return radial($element, options, {
+            out: true,
+            rotate: true
+        });
     };
-    transitions.boxFadeOutRotateFancy = function($element, options) {
-        return transitions.boxFadeOutRotate($element, options, true);
+    transitions.squareFadeOutRotateFancy = function($element, options, easing) {
+        return radial($element, options, {
+            out: true,
+            rotate: true,
+            toggle: true
+        });
     };
-    transitions.boxFadeIn = function($element, options, rotate, toggle) {
-        return transitions.boxFade($element, options, false, rotate, toggle);
+    transitions.squareFadeIn = function($element, options, rotate, toggle, easing) {
+        return radial($element, options, {
+            easing: easing
+        });
     };
-    transitions.boxFadeInRotate = function($element, options, toggle) {
-        return transitions.boxFadeIn($element, options, true, toggle);
+    transitions.squareFadeInRotate = function($element, options, toggle, easing) {
+        return radial($element, options, {
+            rotate: true
+        });
     };
-    transitions.boxFadeInRotateFancy = function($element, options, toggle) {
-        return transitions.boxFadeInRotate($element, options, true);
+    transitions.squareFadeInRotateFancy = function($element, options, easing) {
+        return radial($element, options, {
+            rotate: true,
+            toggle: true
+        });
     };
-    transitions.swirlFadeIn = function($element, options, rotate, toggle) {
-        return transitions.boxFade($element, options, false, rotate, toggle, true);
+    transitions.circleFadeOut = function($element, options, rotate, toggle, easing) {
+        return radial($element, options, {
+            swirl: true,
+            out: true,
+            easing: easing
+        });
     };
-    transitions.swirlFadeInRotate = function($element, options, toggle) {
-        return transitions.swirlFadeIn($element, options, true, toggle);
+    transitions.circleFadeOutRotate = function($element, options, toggle, easing) {
+        return radial($element, options, {
+            swirl: true,
+            out: true,
+            rotate: true
+        });
     };
-    transitions.swirlFadeInRotateFancy = function($element, options) {
-        transitions.swirlFadeInRotate($element, options, true);
+    transitions.circleFadeOutRotateFancy = function($element, options, easing) {
+        return radial($element, options, {
+            swirl: true,
+            out: true,
+            rotate: true,
+            toggle: true
+        });
     };
-    transitions.swirlFadeOut = function($element, options, rotate, toggle) {
-        return transitions.boxFade($element, options, true, rotate, toggle, true);
+    transitions.circleFadeIn = function($element, options, rotate, toggle, easing) {
+        return radial($element, options, {
+            swirl: true,
+            easing: easing
+        });
     };
-    transitions.swirlFadeOutRotate = function($element, options, toggle) {
-        return transitions.swirlFadeOut($element, options, true, toggle);
+    transitions.circleFadeInRotate = function($element, options, toggle, easing) {
+        return radial($element, options, {
+            swirl: true,
+            rotate: true
+        });
     };
-    transitions.swirlFadeOutRotateFancy = function($element, options) {
-        transitions.swirlFadeOutRotate($element, options, true);
+    transitions.circleFadeInRotateFancy = function($element, options, easing) {
+        return radial($element, options, {
+            swirl: true,
+            rotate: true,
+            toggle: true
+        });
     };
-
-    transitions.diagonalFade = function($element, options, reverse, animateSize) {
+    /**
+     * params: reverse, dimensions, easing
+     *
+     * @param {type} $element
+     * @param {type} options
+     * @param {type} params
+     * @returns {undefined}
+     */
+    function diagonalFade ($element, options, params) {
         var w = options.width / options.cols,
                 h = options.height / options.rows,
                 factor = 0,
                 noOfDiagonals = options.rows + options.cols - 1,
                 complete = 0,
                 $elements = createBoxes($element, options.src, options).css({
-            width: animateSize ? 0 : Math.ceil(w),
-            height: animateSize ? 0 : Math.ceil(h),
-            opacity: animateSize ? 1 : 0
+            width: params.dimensions ? 0 : Math.ceil(w),
+            height: params.dimensions ? 0 : Math.ceil(h),
+            opacity: params.dimensions ? 1 : 0
         });
 
         var diagonal = new Array();
@@ -431,7 +539,7 @@
             }
         }
 
-        if (reverse)
+        if (params.reverse)
             diagonal.reverse();
 
         $(diagonal).each(function(index, elements) {
@@ -443,197 +551,85 @@
                         width: Math.ceil(w),
                         height: Math.ceil(h)
                     },
-                    options.animationSpeed,
-                            function() {
-                                if (++complete === $elements.length) {
-                                    animationComplete($element, options);
-                                }
-                            });
+                    {
+                        duration:options.animationSpeed,
+                        easing: options.easing,
+                        done:function() {
+                            if (++complete === $elements.length) {
+                                animationComplete($element, options);
+                            }
+                        }
+                    });
                 });
             }, factor * 6);
             factor += options.timeFactor;
         });
     };
-    transitions.diagonalFadeReverse = function($element, options) {
-        return transitions.diagonalFade($element, options, true, false);
+    transitions.diagonalFad = function($element, options) {
+        return diagonalFade($element, options);
+    }
+    transitions.diagonalFadeReverse = function($element, options, easing) {
+        return diagonalFade($element, options, {
+            reverse: true
+        });
     };
-    transitions.diagonalShow = function($element, options) {
-        return transitions.diagonalFade($element, options, false, true);
+    transitions.diagonalShow = function($element, options, easing) {
+        return diagonalFade($element, options, {
+            dimensions: true
+        });
     };
-    transitions.diagonalShowReverse = function($element, options) {
-        return transitions.diagonalFade($element, options, true, true);
+    transitions.diagonalShowReverse = function($element, options, easing) {
+        return diagonalFade($element, options, {
+            dimensions: true,
+            reverse: true
+        });
     };
-//        transitions.slabs = function($element, options) {
-//            return transitions.vBars($element, options, false, false, false, false, false, false, true);
-//            var vBars = options.cols * 2,
-//                    w = options.width / vBars,
-//                    factor = 0;
-//
-//            for (var i = 0; i < vBars; i++) {
-//                $('<div/>').css({
-//                    width: Math.ceil(w),
-//                    height: options.height,
-//                    left: -w,
-//                    position: 'absolute',
-//                    backgroundImage: 'url(' + options.src + ')',
-//                    backgroundPosition: '' + (-i * w) + 'px 0px',
-//                    opacity: 0
-//                }).addClass('transitions-el').appendTo($element);
-//            }
-//            options.timeFactor = options.animationSpeed / vBars;
-//            $('.transitions-el', $element).each(function(index) {
-//                var i = vBars - index;
-//                var el = $('.transitions-el', $element).eq(i);
-//                var left = i * w;
-//                setTimeout(function() {
-//                    el.animate({left: left, opacity: 1}, options.animationSpeed);
-//                }, factor);
-//                factor += options.timeFactor;
-//            });
-//            factor -= options.timeFactor;
-//            setTimeout(function() {
-//                $('.transitions-el', $element).eq(0).animate({left: 0, opacity: 1}, options.animationSpeed, function() {
-//                    animationComplete($element, options);
-//                });
-//            }, factor);
-//        };
-    transitions.horizontalBlind = function($element, options, reverse, fade) {
-        return transitions.hBars(
-                $element,
-                options,
-                false, // direction
-                false, // order
-                reverse, // reverse
-                false, // toggle
-                fade, // fade
-                true, // dimensions
-                false // slabs
-                );
-    };
-    transitions.horizontalBlindReverse = function($element, options) {
-        return transitions.horizontalBlind($element, options,
-                true // reverse
-                );
-    };
-    transitions.verticalBlind = function($element, options, reverse, fade) {
-        return transitions.vBars($element, options,
-                false, // direction
-                false, // order
-                reverse, // reverse
-                false, // toggle
-                fade, // fade
-                true, // dimensions
-                false // slabs
-                );
-    };
-    transitions.verticalBlindReverse = function($element, options) {
-        return transitions.verticalBlind($element, options,
-                true // reverse
-                );
-    };
-    transitions.horizontalBlindFade = function($element, options, reverse, dimensions) {
-        return transitions.hBars(
-                $element,
-                options,
-                false, // direction
-                false, // order
-                reverse, // reverse
-                false, // toggle
-                true, // fade
-                dimensions, // dimensions
-                false // slabs
-                );
-    };
-    transitions.horizontalBlindFadeReverse = function($element, options, dimensions) {
-        return transitions.horizontalBlindFade($element, options,
-                true, // reverse
-                dimensions // dimensions
-                );
-    };
-    transitions.verticalBlindFade = function($element, options, reverse, dimensions) {
-        return transitions.vBars(
-                $element,
-                options,
-                false, // direction
-                false, // order
-                reverse, // reverse
-                false, // toggle
-                true, // fade
-                dimensions, // dimensions
-                false // slabs
-                );
-    };
-    transitions.verticalBlindFadeReverse = function($element, options, dimensions) {
-        return transitions.verticalBlindFade($element, options,
-                true, // reverse
-                dimensions // dimensions
-                );
-    };
-    transitions.horizontalBars = function($element, options, right, reverse, fade, dimensions) {
-        // $element, options, direction, order, reverse, toggle, fade, dimensions, slabs
-        return transitions.hBars($element, options,
-                right ? 2 : 1, //: (direction === 2) ? 2 : true,
-                false, //: order,
-                reverse, //: reverse,
-                false, //: toggle,
-                fade, //: fade,
-                dimensions //: dimensions
-                );
-    };
-    transitions.horizontalBarsReverse = function($element, options, right, fade, dimensions) {
-        return transitions.horizontalBars($element, options, right, true, fade, dimensions);
-    };
-    transitions.horizontalBarsLeft = function($element, options, reverse, fade, dimensions) {
-        return transitions.horizontalBars($element, options, false, reverse, fade, dimensions);
-    };
-    transitions.horizontalBarsLeftReverse = function($element, options, fade, dimensions) {
-        return transitions.horizontalBarsReverse($element, options, false, fade, dimensions);
-    };
-    transitions.horizontalBarsRight = function($element, options, reverse, fade, dimensions) {
-        return transitions.horizontalBars($element, options, true, reverse, fade, dimensions);
-    };
-    transitions.horizontalBarsRightReverse = function($element, options, fade, dimensions) {
-        return transitions.horizontalBarsReverse($element, options, true, fade, dimensions);
-    };
-
-    transitions.hBars = function($element, options, direction, order, reverse, toggle, fade, dimensions, slabs) {
+    /**
+     * params: direction, out, reverse, toggle, fade, dimensions, easing
+     *
+     * @param {type} $element
+     * @param {type} options
+     * @param {type} params
+     * @returns {undefined}
+     */
+    function hBars ($element, options, params) {
         var hBars = options.rows * 2,
                 h = options.height / hBars,
                 factor = 0,
-                $elements = createHBars($element, order ? options.previousImage : options.src, options, {
-                    opacity: order ? 1 : 0,
-                    zIndex: order ? 2 : 1
+                $elements = createHBars($element, params.out ? options.previousImage : options.src, options, {
+                    opacity: params.out ? 1 : 0,
+                    zIndex: params.out ? 2 : 1
                 }),
-        cssFrom = {opacity: 1},
-        cssTo = {opacity: 1};
+                cssFrom = {opacity: 1},
+                cssTo = {opacity: 1};
 
-        if (order) {
+        if (params.out) {
             fi(options.src).prependTo($element);
         }
 
-        if (reverse) {
+        if (params.reverse) {
             $elements = reverseArray.call($elements);
         }
 
-        if (dimensions) {
+        if (params.dimensions) {
             cssFrom.height = 0;
             cssTo.height = Math.ceil(h);
         }
 
-        if (fade) {
+        if (params.fade) {
             cssFrom.opacity = 0;
         }
 
-        if (direction) {
-            cssFrom.marginLeft = (direction === 1) ? options.width : -options.width;
+        if (params.direction || params.toggle) {
+            cssFrom.marginLeft = (params.direction === 'left') ? options.width : -options.width;
             cssTo.marginLeft = 0;
         }
 
-        if (direction && toggle && index % 2) {
+        if (params.direction && params.toggle && params.index % 2) {
             cssFrom.marginLeft = -cssFrom.marginLeft;
         }
 
-        if (order) {
+        if (params.out) {
             // Hide elements instead of show elements
             var temp = -cssFrom.marginLeft;
 
@@ -649,17 +645,18 @@
 
             cssFrom.opacity = cssTo.opacity;
             // Leave opacity if it's the only visible effect...
-            cssTo.opacity = (direction || dimensions) ? temp : 0;
+            cssTo.opacity = (params.direction || params.dimensions) ? temp : 0;
         }
 
         $elements.each(function(index, element) {
-            if (direction && toggle && index % 2) {
+            if (params.direction && params.toggle && index % 2) {
                 cssFrom.marginLeft = -cssFrom.marginLeft;
             }
 
             setTimeout(function() {
                 $(element).css(cssFrom).animate(cssTo,
                         options.animationSpeed,
+                        options.easing,
                         function() {
                             if (index === $elements.length - 1) {
                                 animationComplete($element, options);
@@ -669,37 +666,165 @@
             factor += options.timeFactor;
         });
     };
-    transitions.vBars = function($element, options, direction, order, reverse, toggle, fade, dimensions) {
+    transitions.horizontalBarsFadeIn = function($element, options, right, reverse, fade, dimensions, easing) {
+        return hBars($element, options, {
+            fade: true
+        });
+    };
+    transitions.horizontalBarsFadeInReverse = function($element, options, right, reverse, fade, dimensions, easing) {
+        return hBars($element, options, {
+            fade: true,
+            reverse: true
+        });
+    };
+    transitions.horizontalBarsDimensionsIn = function($element, options, reverse, dimensions, easing) {
+        return hBars($element, options, {
+            dimensions: true
+        });
+    };
+    transitions.horizontalBarsDimensionsInReverse = function($element, options, dimensions, easing) {
+        return hBars($element, options, {
+            dimensions: true,
+            reverse: true
+        });
+    };
+    transitions.horizontalBarsLeftIn = function($element, options, reverse, fade, dimensions, easing) {
+        return hBars($element, options, {
+            direction: 'left'
+        });
+    };
+    transitions.horizontalBarsLeftInReverse = function($element, options, fade, dimensions, easing) {
+        return hBars($element, options, {
+            direction: 'left',
+            reverse: true
+        });
+    };
+    transitions.horizontalBarsRightIn = function($element, options, reverse, fade, dimensions, easing) {
+        return hBars($element, options, {
+            direction: 'right'
+        });
+    };
+    transitions.horizontalBarsRightInReverse = function($element, options, fade, dimensions, easing) {
+        return hBars($element, options, {
+            direction: 'right',
+            reverse: true
+        });
+    };
+    transitions.horizontalBarsToggleIn = function($element, options, reverse, fade, dimensions, easing) {
+        return hBars($element, options, {
+            toggle: true,
+        });
+    };
+    transitions.horizontalBarsToggleInReverse = function($element, options, fade, dimensions, easing) {
+        return hBars($element, options, {
+            toggle: true,
+            reverse: true
+        });
+    };
+    transitions.horizontalBarsFadeOut = function($element, options, right, reverse, fade, dimensions, easing) {
+        return hBars($element, options, {
+            out: true,
+            fade: true
+        });
+    };
+    transitions.horizontalBarsFadeOutReverse = function($element, options, right, reverse, fade, dimensions, easing) {
+        return hBars($element, options, {
+            out: true,
+            fade: true,
+            reverse: true
+        });
+    };
+    transitions.horizontalBarsDimensionsOut = function($element, options, reverse, dimensions, easing) {
+        return hBars($element, options, {
+            out: true,
+            dimensions: true
+        });
+    };
+    transitions.horizontalBarsDimensionsOutReverse = function($element, options, dimensions, easing) {
+        return hBars($element, options, {
+            out: true,
+            dimensions: true,
+            reverse: true
+        });
+    };
+    transitions.horizontalBarsLeftOut = function($element, options, reverse, fade, dimensions, easing) {
+        return hBars($element, options, {
+            out: true,
+            direction: 'left'
+        });
+    };
+    transitions.horizontalBarsLeftOutReverse = function($element, options, fade, dimensions, easing) {
+        return hBars($element, options, {
+            out: true,
+            direction: 'left',
+            reverse: true
+        });
+    };
+    transitions.horizontalBarsRightOut = function($element, options, reverse, fade, dimensions, easing) {
+        return hBars($element, options, {
+            out: true,
+            direction: 'right'
+        });
+    };
+    transitions.horizontalBarsRightOutReverse = function($element, options, fade, dimensions, easing) {
+        return hBars($element, options, {
+            out: true,
+            direction: 'right',
+            reverse: true
+        });
+    };
+    transitions.horizontalBarsToggleOut = function($element, options, reverse, fade, dimensions, easing) {
+        return hBars($element, options, {
+            out: true,
+            toggle: true
+        });
+    };
+    transitions.horizontalBarsToggleOutReverse = function($element, options, fade, dimensions, easing) {
+        return hBars($element, options, {
+            out: true,
+            toggle: true,
+            reverse: true
+        });
+    };
+    /**
+     * params: direction, out, reverse, toggle, fade, dimensions, easing
+     *
+     * @param {type} $element
+     * @param {type} options
+     * @param {type} params
+     * @returns {undefined}
+     */
+    function vBars ($element, options, params) {
         var vBars = options.cols * 2,
                 w = options.width / vBars,
                 factor = 0,
-                $elements = createVBars($element, order ? options.previousImage : options.src, options);
+                $elements = createVBars($element, params.out ? options.previousImage : options.src, options);
 
-        if (order) {
+        if (params.out) {
             $elements.css({opacity: 1, zIndex: 2});
             fi(options.src).prependTo($element);
         }
 
-        if (reverse) {
+        if (params.reverse) {
             $elements = reverseArray.call($elements);
         }
 
         $elements.each(function(index, element) {
-            var marginFrom = direction ? ((direction === 1) ? options.height : -options.height) : 0,
+            var marginFrom = params.direction ? ((params.direction==='up') ? options.height : -options.height) : 0,
                     marginTo = 0,
-                    widthFrom = dimensions ? 0 : Math.ceil(w),
+                    widthFrom = params.dimensions ? 0 : Math.ceil(w),
                     widthTo = Math.ceil(w),
-                    opacityFrom = fade ? 0 : 1,
+                    opacityFrom = params.fade ? 0 : 1,
                     opacityTo = 1,
                     cssFrom,
-                    cssTo;
+           cssTo;
 
 
-            if (toggle && index % 2) {
+            if (params.toggle && index % 2) {
                 marginFrom = -marginFrom;
             }
 
-            if (order) {
+            if (params.out) {
                 // Hide elements instead of show elements
                 var temp = -marginFrom;
 
@@ -714,7 +839,7 @@
                 temp = opacityFrom;
 
                 opacityFrom = opacityTo;
-                opacityTo = (direction || dimensions) ? temp : 0;
+                opacityTo = (params.direction || params.dimensions) ? temp : 0;
             }
 
             cssFrom = {
@@ -730,6 +855,7 @@
             setTimeout(function() {
                 $(element).css(cssFrom).animate(cssTo,
                         options.animationSpeed,
+                        options.easing,
                         function() {
                             if (index === $elements.length - 1) {
                                 animationComplete($element, options);
@@ -739,43 +865,143 @@
             factor += options.timeFactor;
         });
     };
-    transitions.mixBars = function($element, options) {
-        return transitions.vBars($element, options, 2, false, false, true);
+    transitions.verticalBarsFadeIn = function($element, options, right, reverse, fade, dimensions, easing) {
+        return vBars($element, options, {
+            fade: true
+        });
     };
-    transitions.mixBarsFancy = function($element, options) {
-        var $elements = createVBars($element, options.src, options),
-                factor = 0,
-                i;
-
-        for (i = 0; i < options.cols; i++) {
-            setTimeout(function(index) {
-                $elements.eq(index).css({marginTop: options.height}).animate({marginTop: 0, opacity: 1}, options.animationSpeed);
-                $elements.eq(index + 1).css({marginTop: -options.height}).animate({marginTop: 0, opacity: 1}, options.animationSpeed, function() {
-                    if (index === options.cols - 2)
-                        animationComplete($element, options);
-                });
-            }(i * 2), factor * 1.5);
-            factor += options.timeFactor;
-        }
+    transitions.verticalBarsFadeInReverse = function($element, options, right, reverse, fade, dimensions, easing) {
+        return vBars($element, options, {
+            fade: true,
+            reverse: true
+        });
     };
-    transitions.barsDown = function($element, options) {
-        return transitions.vBars($element, options, 2);
+    transitions.verticalBarsDimensionsIn = function($element, options, reverse, dimensions, easing) {
+        return vBars($element, options, {
+            dimensions: true
+        });
     };
-    transitions.barsDownReverse = function($element, options) {
-        return transitions.vBars($element, options, 2, true);
+    transitions.verticalBarsDimensionsInReverse = function($element, options, dimensions, easing) {
+        return vBars($element, options, {
+            dimensions: true,
+            reverse: true
+        });
     };
-    transitions.barsUp = function($element, options) {
-        return transitions.vBars($element, options, 1);
+    transitions.verticalBarsLeftIn = function($element, options, reverse, fade, dimensions, easing) {
+        return vBars($element, options, {
+            direction: 'left'
+        });
     };
-    transitions.explode = function($element, options, fancy) {
+    transitions.verticalBarsLeftInReverse = function($element, options, fade, dimensions, easing) {
+        return vBars($element, options, {
+            direction: 'left',
+            reverse: true
+        });
+    };
+    transitions.verticalBarsRightIn = function($element, options, reverse, fade, dimensions, easing) {
+        return vBars($element, options, {
+            direction: 'right'
+        });
+    };
+    transitions.verticalBarsRightInReverse = function($element, options, fade, dimensions, easing) {
+        return vBars($element, options, {
+            direction: 'right',
+            reverse: true
+        });
+    };
+    transitions.verticalBarsToggleIn = function($element, options, reverse, fade, dimensions, easing) {
+        return vBars($element, options, {
+            toggle: true,
+        });
+    };
+    transitions.verticalBarsToggleInReverse = function($element, options, fade, dimensions, easing) {
+        return vBars($element, options, {
+            toggle: true,
+            reverse: true
+        });
+    };
+    transitions.verticalBarsFadeOut = function($element, options, right, reverse, fade, dimensions, easing) {
+        return vBars($element, options, {
+            out: true,
+            fade: true
+        });
+    };
+    transitions.verticalBarsFadeOutReverse = function($element, options, right, reverse, fade, dimensions, easing) {
+        return vBars($element, options, {
+            out: true,
+            fade: true,
+            reverse: true
+        });
+    };
+    transitions.verticalBarsDimensionsOut = function($element, options, reverse, dimensions, easing) {
+        return vBars($element, options, {
+            out: true,
+            dimensions: true
+        });
+    };
+    transitions.verticalBarsDimensionsOutReverse = function($element, options, dimensions, easing) {
+        return vBars($element, options, {
+            out: true,
+            dimensions: true,
+            reverse: true
+        });
+    };
+    transitions.verticalBarsLeftOut = function($element, options, reverse, fade, dimensions, easing) {
+        return vBars($element, options, {
+            out: true,
+            direction: 'left'
+        });
+    };
+    transitions.verticalBarsLeftOutReverse = function($element, options, fade, dimensions, easing) {
+        return vBars($element, options, {
+            out: true,
+            direction: 'left',
+            reverse: true
+        });
+    };
+    transitions.verticalBarsRightOut = function($element, options, reverse, fade, dimensions, easing) {
+        return vBars($element, options, {
+            out: true,
+            direction: 'right'
+        });
+    };
+    transitions.verticalBarsRightOutReverse = function($element, options, fade, dimensions, easing) {
+        return vBars($element, options, {
+            out: true,
+            direction: 'right',
+            reverse: true
+        });
+    };
+    transitions.verticalBarsToggleOut = function($element, options, reverse, fade, dimensions, easing) {
+        return vBars($element, options, {
+            out: true,
+            toggle: true
+        });
+    };
+    transitions.verticalBarsToggleOutReverse = function($element, options, fade, dimensions, easing) {
+        return vBars($element, options, {
+            out: true,
+            toggle: true,
+            reverse: true
+        });
+    };
+    /**
+     * params: fancy, easing
+     *
+     * @param {type} $element
+     * @param {type} options
+     * @param {type} params
+     * @returns {undefined}
+     */
+    function explode ($element, options, params) {
         var factor = 0,
                 w = options.width / options.cols,
                 h = options.height / options.rows,
                 $elements = createBoxes($element, options.src, options).css({
             left: (options.width - w) / 2,
             top: (options.height - h) / 2,
-            width: fancy ? 0 : Math.ceil(w),
-            height: fancy ? 0 : Math.ceil(h)
+            width: params.fancy ? 0 : Math.ceil(w),
+            height: params.fancy ? 0 : Math.ceil(h)
         });
 
         function _explode(index, element) {
@@ -787,6 +1013,7 @@
                 height: Math.ceil(h)
             },
             options.animationSpeed * 2,
+            options.easing,
                     function() {
                         if (index === $elements.length - 1) {
                             animationComplete($element, options);
@@ -797,7 +1024,7 @@
         }
         ;
 
-        if (fancy) {
+        if (params.fancy) {
             $elements.each(function(index, element) {
                 setTimeout(function() {
                     _explode(index, element);
@@ -810,22 +1037,46 @@
             });
         }
     };
+    transitions.explode = function($element, options) {
+        return explode($element, options, {});
+    }
     transitions.explodeFancy = function($element, options) {
-        return transitions.explode($element, options, true);
+        return transitions.explode($element, options, {
+            fancy: true
+        });
     };
-    transitions.fade = function($element, options, reverse) {
+    /**
+     * params: reverse, easing
+     *
+     * @param {type} $element
+     * @param {type} options
+     * @param {type} reverse
+     * @returns {undefined}
+     */
+    function fade ($element, options, params) {
         el(options.src, {
             zIndex: 100,
             opacity: 0,
             width: options.width,
             height: options.height
         }).appendTo($element).animate({opacity: 1},
-        options.animationSpeed * 2, function() {
+        options.animationSpeed * 2, options.easing, function() {
             animationComplete($element, options);
         }
         );
     };
-    transitions.slideInFancy = function($element, options) {
+    transitions.fade = function($element, options) {
+        return fade($element, options, {});
+    }
+    /**
+     * params: easing
+     *
+     * @param {type} $element
+     * @param {type} options
+     * @param {type} params
+     * @returns {undefined}
+     */
+    function slideInFancy ($element, options, params) {
         var hBars = options.rows * 2,
                 h = options.height / hBars,
                 factor = 0,
@@ -849,7 +1100,7 @@
                 }).addClass('transitions-el').appendTo($element);
 
                 setTimeout(function() {
-                    element.animate({marginLeft: 0, opacity: 1}, options.animationSpeed, function() {
+                    element.animate({marginLeft: 0, opacity: 1}, options.animationSpeed, options.easing, function() {
                         if (index === hBars - 1) {
                             animationComplete($element, options);
                         }
@@ -859,25 +1110,29 @@
             })(i);
         }
     };
-    transitions.chop = function($element, options, right, dimensions, diagonal, reverse, toggle) {
-        return transitions.hBars($element, options, right ? 2 : 1, true, reverse, toggle, false, dimensions, false);
-    };
-    transitions.chopDimensions = function($element, options) {
-        return transitions.chop($element, options, (Math.random() > 0.5), true);
-    };
+    transitions.slideInFancy = function($element, options){
+        return slideInFancy($element, options, {});
+    }
 //        transitions.chopDiagonal = function($element, options) {
 //            return transitions.chop($element, options, false, true, false);
 //        };
 //        transitions.chopDiagonalReverse = function($element, options) {
 //            return transitions.chop($element, options, false, false, true);
 //        };
-    transitions.slide = function($element, options, direction) {
+    /**
+     * params: direction, easing
+     *
+     * @param {type} $element
+     * @param {type} options
+     * @returns {undefined}
+     */
+    function slide ($element, options, params) {
         var leftFrom = 0,
                 topFrom = 0,
                 leftTo = 0,
                 topTo = 0;
 
-        switch (direction) {
+        switch (params.direction) {
             case "up":
                 topFrom = options.height;
                 topTo = '-=' + options.height;
@@ -921,6 +1176,7 @@
                 opacity: 1
             },
             options.animationSpeed,
+            options.easing,
                     function() {
                         if (index === 1)
                             animationComplete($element, options);
@@ -928,19 +1184,19 @@
         });
     };
     transitions.slideLeft = function($element, options) {
-        transitions.slide($element, options, 'left');
+        return slide($element, options, {direction: 'left'});
     };
     transitions.slideRight = function($element, options) {
-        return transitions.slide($element, options, 'right');
+        return slide($element, options, {direction: 'right'});
     };
     transitions.slideDown = function($element, options) {
-        return transitions.slide($element, options, 'down');
+        return slide($element, options, {direction: 'down'});
     };
     transitions.slideUp = function($element, options) {
-        return transitions.slide($element, options, 'up');
+        return slide($element, options, {direction: 'up'});
     };
     window.Transitions = function(options) {
-        var defaultOptions = {
+        var defaultOptions = $.extend({
             effect: null,
             animationSpeed: 500,
             rows: 6,
@@ -949,14 +1205,15 @@
             coordinates: new Array(),
             timeFactor: 0,
             circles: 10,
-            direction: 'backward', //for reverse peal animation
+            direction: false, //for reverse peal animation
             minCircumference: 0,
             currentRow: 0,
             width: 0,
             height: 0,
             previousImageWidth: null,
-            previousImageHeight: null
-        };
+            previousImageHeight: null,
+            easing: 'easeInOutCirc'
+        }, options);
 
         return {
             _: function($element, options) {
