@@ -7,8 +7,7 @@
                 'randomFade', 'randomDimensions', 'boxes', 'explode', 'explodeFancy', 'linearPeal', 'linearPealReverse', 'linearPealDimensions',
                 'linearPealReverseDimensions', 'blind', 'blindHorizontal', 'barsUp', 'barsDown', 'barsDownReverse',
                 'blindFade', 'fallingBlindFade', 'raisingBlindFade', 'mixBars', 'mixBarsFancy', 'blindFadeReverse', 'slideIn',
-                'slideInFancy', 'slideInReverse', 'chop', 'chopDimensions', 'chopDiagonal', 'chopDiagonalReverse',
-                'slideIn', 'slideInReverse']
+                'slideInFancy', 'slideInReverse', 'slideIn', 'slideInReverse']
 
     /**
      * Extended carousel model including all the information required by the
@@ -35,7 +34,7 @@
                     bulletsSize: "bullets-medium",
                     colors: "colors-light",
                     cols: 12,
-                    transitions: ["fade", "slideLeft", "slideRight", "slideUp", "slideDown"],
+                    transitions: ["blindFadeReverse"],
                     transitionsGroup: "simple",
                     hasNextPrev: true,
                     navAlwaysVisible: true,
