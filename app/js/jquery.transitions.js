@@ -1212,7 +1212,7 @@
             height: 0,
             previousImageWidth: null,
             previousImageHeight: null,
-            easing: 'easeInOutCirc'
+            easing: false
         }, options);
 
         return {
@@ -1230,7 +1230,7 @@
                                 height: options.height ? options.height : this.height,
                                 currentRow: 0
                             });
-
+                    
                     if (!_options.effect) {
                         var _transitions = Object.keys(transitions);
                         _options.effect = _transitions[Math.floor(Math.random() * _transitions.length)];

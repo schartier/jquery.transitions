@@ -6,13 +6,13 @@
                     animationSpeed: 500,
                     rows: 4,
                     cols: 12,
-                    effect: null,
+                    effect: 'explode',
                     width: null,
                     height: null
                 },
                 defaultTransitionsCarouselOptions = {
                     pauseTime: 4000,
-                    effect: null,
+                    effect: 'explode',
                     transitions: Object.keys(Transitions.transitions()),
                     navType: 'navigation-bullets', // navigation-bullets, navigation-numbers, navigation-thumbnails
                     navOrientation: 'navigation-horizontal', // navigation-vertical, navigation-horizontal,
